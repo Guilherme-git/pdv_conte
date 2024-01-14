@@ -1,0 +1,10 @@
+{
+  "expo": {
+    "name": "pdv_conte",
+    "slug": "pdv_conte",
+    "version": "1.0.0",
+    "assetBundlePatterns": [
+      "**/*"
+    ]
+  }
+}
