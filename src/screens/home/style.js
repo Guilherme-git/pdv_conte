@@ -172,3 +172,65 @@ export const ContainerCarrinho = styled.TouchableOpacity`
     width: ${RFValue(60)}px;
 `;
 
+export const ContentDescriptionModal = styled.View`
+    background-color: #f5f5f5;
+    height: ${RFValue(400)}px;
+    margin-top: ${RFValue(10)}px;
+    border-radius: ${RFValue(8)}px;
+    padding: ${RFValue(10)}px;
+`;
+
+export const ContentDescriptionHeader = styled.View`
+    flex-direction: row;
+    justify-content: space-between;
+    margin-bottom: ${RFValue(5)}px;
+`;
+
+export const ContentDescriptionText = styled.Text`
+    align-self: center;
+    font-family: ${({theme}) => theme.FONT_FAMILY.REGULAR};
+    font-size:  ${({theme}) => theme.FONT_SIZE.LG}px;  
+
+`;
+
+export const Divider = styled.View`
+    background-color: #696969;
+    height: 1px;
+`;
+
+export const ContentDescriptionBody = styled.View`
+    flex-direction: row;
+    justify-content: space-between;
+    margin-bottom: ${RFValue(5)}px;
+    margin-top: ${RFValue(10)}px;
+`;
+
+export const ContentDescriptionBodyText = styled.Text`
+    font-weight: bold;
+    font-family: ${({theme}) => theme.FONT_FAMILY.REGULAR};
+    font-size:  ${({theme}) => theme.FONT_SIZE.LG}px;  
+`;
+
+export const BtnPagamento = styled.TouchableOpacity`
+    height: ${RFValue(40)}px;
+    border-radius: ${RFValue(8)}px;
+    justify-content: center;
+    align-items: center;
+    margin-bottom: ${RFValue(20)}px;
+`;
+
+export const BtnPagamentoText = styled.Text`
+    color: #fff;
+    font-size: ${RFValue(18)}px;
+`;
+
+export const ContentDescriptionListProduct = styled.View`
+    flex-direction: row;
+    justify-content: space-between;
+    margin-bottom: ${RFValue(2)}px;
+`;
+
+export const ContentDescriptionListProductText = styled.Text`
+    font-family: ${({theme}) => theme.FONT_FAMILY.REGULAR};
+    font-size:  ${({theme}) => theme.FONT_SIZE.LG}px;  
+`;

@@ -46,11 +46,11 @@ export default function Login() {
         usuario,
         senha,
       });
-
+      
       const user = response.data.user;
       const business = response.data.business;
       const data = Object.assign(user, { business: business });
-
+      
       await AsyncStorage.setItem("@app_conte_pdv", JSON.stringify(data));
       navigation.navigate("drawer");
       setLoading(false);
