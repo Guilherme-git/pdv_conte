@@ -21,7 +21,7 @@ export const SubTitleContainer = styled.Text`
 
 export const ContainerCategorias = styled.View`
     background-color: ${({theme}) => theme.COLORS.COR3};
-    height: ${RFValue(110)}px;
+    height: ${RFValue(100)}px;
     margin: ${RFValue(10)}px;
     padding: ${RFValue(10)}px;
     border-radius: ${RFValue(8)}px;
@@ -109,7 +109,8 @@ export const LimparFiltros = styled.TouchableOpacity`
     background-color: ${({theme}) => theme.COLORS.COR1};
     justify-content: center;
     align-items: center;
-    padding: ${RFValue(10)}px;
+    height: ${RFValue(30)}px;
+    padding: ${RFValue(5)}px;
     border-radius: ${RFValue(8)}px;
 `;
 

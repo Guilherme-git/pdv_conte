@@ -46,7 +46,7 @@ export default function Login() {
         usuario,
         senha,
       });
-      
+
       const user = response.data.user;
       const business = response.data.business;
       const data = Object.assign(user, { business: business });

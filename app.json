@@ -1,10 +1,40 @@
 {
   "expo": {
-    "name": "pdv_conte",
+    "name": "PDV Conte",
     "slug": "pdv_conte",
-    "version": "1.0.0",
+    "version": "1.0.1",
+    "icon": "./src/assets/logo/icon_app.png",
     "assetBundlePatterns": [
       "**/*"
-    ]
+    ],
+    "ios": {
+      "supportsTablet": true,
+      "requireFullScreen": true
+    },
+    "android": {
+      "adaptiveIcon": {
+        "foregroundImage": "./src/assets/logo/icon_app.png",
+        "backgroundColor": "#ffffff"
+      },
+      "versionCode": 2
+    },
+    "splash": {
+      "image": "./src/assets/logo/splash.png",
+      "resizeMode": "contain",
+      "backgroundColor": "#ffffff"
+    },
+    "plugins": [
+      [
+        "expo-screen-orientation",
+        {
+          "initialOrientation": "DEFAULT"
+        }
+      ]
+    ],
+    "extra": {
+      "eas": {
+        "projectId": "ea2a1a5a-fd73-4820-b6a2-4d48831667bd"
+      }
+    }
   }
 }

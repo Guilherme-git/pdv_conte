@@ -6,6 +6,7 @@ import {
   Button,
   ActivityIndicator,
   ScrollView,
+  Dimensions
 } from "react-native";
 import * as Style from "./style";
 import Header from "../../components/header";
@@ -23,7 +24,12 @@ import Modal from "react-native-modal";
 import Dialog from "react-native-dialog";
 import MaskInput, { createNumberMask } from "react-native-mask-input";
 import { Picker } from "@react-native-picker/picker";
-import Toast from 'react-native-toast-message';
+import Toast from "react-native-toast-message";
+import { WebView } from "react-native-webview";
+import CONST from "../../consts/index";
+import * as Print from "expo-print";
+import { shareAsync } from "expo-sharing";
+import * as FileSystem from "expo-file-system";
 
 export default function Home() {
   const navigation = useNavigation();
@@ -46,18 +52,20 @@ export default function Home() {
     open: false,
     title: "",
     message: "",
+    type: 1,
   });
   const [pesquisaProduto, setPesquisaProduto] = useState("");
   const [produtosCarrinho, setProdutosCarrinho] = useState([]);
   const [totalCarrinho, setTotalCarrinho] = useState(0);
   const [totalCarrinhoDesconto, setTotalCarrinhoDesconto] = useState(0);
   const [modalCarrinho, setModalCarrinho] = useState(false);
+  const [modalImprimir, setModalImprimir] = useState(false);
   const [descontoDialog, setDescontoDialog] = useState(false);
   const [metodoPagamentoDialog, setMetodoPagamentoDialog] = useState(false);
   const [clientesDialog, setClientesDialog] = useState(false);
   const [desconto, setDesconto] = useState();
   const [metodoPagamento, setMetodoPagamento] = useState("cash");
-
+  const [rotacaoTela, setRotacaoTela] = useState(1)
   const dollarMask = createNumberMask({
     delimiter: "",
     separator: ".",
@@ -66,6 +74,14 @@ export default function Home() {
 
   useFocusEffect(
     useCallback(() => {
+      Dimensions.addEventListener('change', ({window:{width,height}}) => {
+        if(width < height) {
+          setRotacaoTela(1)
+        } else {
+          setRotacaoTela(2)
+        }
+      })
+
       const response = async () => {
         if ((await AsyncStorage.getItem("@app_conte_pdv")) !== null) {
           setLoadingCategorias(true);
@@ -92,7 +108,18 @@ export default function Home() {
           const dados3 = await api.get(
             `/app/pdv/cliente/listar?business_id=${userLogado.business.id}&owner_id=${userLogado.id}`
           );
+
           setClientes(dados3.data);
+          for (let i = 0; i < dados3.data.length; i++) {
+            const element = dados3.data[i];
+        
+            setClienteSelecionado({
+              id: element.id,
+              name: element.name
+            });
+          
+             break;
+          }   
         }
       };
       response();
@@ -170,14 +197,13 @@ export default function Home() {
       setTotalCarrinho(total);
       setTotalCarrinhoDesconto(total);
       setProdutosCarrinho(array_sup);
-
-      Toast.show({
-        type: 'success',
-        text1: 'Produto adicionado',
-        text2: 'O produto foi adicionado no carrinho!',
-        visibilityTime: 2000
-      });
     }
+    Toast.show({
+      type: "success",
+      text1: "Produto adicionado",
+      text2: "O produto foi adicionado no carrinho!",
+      visibilityTime: 2000,
+    });
   };
 
   const abrirCarrinho = () => {
@@ -186,6 +212,7 @@ export default function Home() {
         open: true,
         title: "Nenhum produto",
         message: "Adicione pelo menos um produto no carrinho",
+        type: 1,
       });
       return;
     }
@@ -214,10 +241,10 @@ export default function Home() {
     setDescontoDialog(false);
 
     Toast.show({
-      type: 'success',
-      text1: 'Desconto aplicado',
-      text2: 'O desconto foi aplicado na compra!',
-      visibilityTime: 2000
+      type: "success",
+      text1: "Desconto aplicado",
+      text2: "O desconto foi aplicado na compra!",
+      visibilityTime: 2000,
     });
   };
 
@@ -227,10 +254,10 @@ export default function Home() {
     setDesconto(null);
 
     Toast.show({
-      type: 'success',
-      text1: 'Desconto removido',
-      text2: 'O desconto foi removido da compra!',
-      visibilityTime: 2000
+      type: "success",
+      text1: "Desconto removido",
+      text2: "O desconto foi removido da compra!",
+      visibilityTime: 2000,
     });
   };
 
@@ -241,86 +268,155 @@ export default function Home() {
     const array_sup = [...produtosCarrinho];
     array_sup.splice(index, 1);
 
-    const totalDesconto = Number(totalCarrinhoDesconto) - Number(item.preco) * Number(item.quantidade);
+    const totalDesconto =
+      Number(totalCarrinhoDesconto) -
+      Number(item.preco) * Number(item.quantidade);
     setTotalCarrinho(totalDesconto);
     setTotalCarrinhoDesconto(totalDesconto);
     setProdutosCarrinho(array_sup);
 
+    if (array_sup.length <= 0) {
+      setModalCarrinho(false);
+    }
+
     Toast.show({
-      type: 'success',
-      text1: 'Produto removido',
-      text2: 'O produto foi removido do carrinho!',
-      visibilityTime: 2000
+      type: "success",
+      text1: "Produto removido",
+      text2: "O produto foi removido do carrinho!",
+      visibilityTime: 2000,
     });
   };
 
   const pagamento = async () => {
-    if(!clienteSelecionado?.id) {
+    if (!clienteSelecionado?.id) {
       setAlert({
         open: true,
         title: "Nenhum cliente",
-        message: "Selecione pelo menos um cliente para continuar"
+        message: "Selecione pelo menos um cliente para continuar",
+        type: 1,
       });
       return;
     }
 
-    // try {
-    //   setLoadingPagamento(true);
-    //   const response = await api.post("/app/sell/create", {
-    //     total: totalCarrinhoDesconto,
-    //     metodoPagamento,
-    //     produtos: produtosCarrinho,
-    //     cliente: clienteSelecionado,
-    //     user,
-    //   });
-    //   if (response.data.message == "Venda cadastrada") {
-    //     setAlert({
-    //       open: true,
-    //       title: "Cadastrada",
-    //       message: "Venda cadastrada com sucesso",
-    //       colorButton: "#5CB85C",
-    //     });
-    //     navigation.navigate("venda");
-    //   }
-    //   fecharModalConfirmaPagamento();
-    //   setClienteSelecionado();
-    //   setTotalCarrinho(0);
-    //   setTotalCarrinhoDesconto(0);
-    //   setProdutosCarrinho([]);
-    //   setLoadingPagamento(false);
-    // } catch (error) {
-    //   setAlert({
-    //     open: true,
-    //     title: "Ocorreu um erro",
-    //     message: "Ocorreu um problema, tente novamente mais tarde!",
-    //     colorButton: "#DD6B55",
-    //   });
-    //   setLoadingPagamento(false);
-    // }
+    try {
+      setLoadingPagamento(true);
+      const response = await api.post("/app/pdv/venda/cadastrar", {
+        total: totalCarrinhoDesconto,
+        metodoPagamento,
+        produtos: produtosCarrinho,
+        cliente: clienteSelecionado.id,
+        usuario,
+      });
+
+      if (response.data.message == "Venda cadastrada") {
+        setAlert({
+          open: true,
+          title: "Venda realizada",
+          message: "Deseja imprimir o cupom fiscal ?",
+          cancelButton: true,
+          type: 2,
+        });
+        Toast.show({
+          type: "success",
+          text1: "Venda realizada",
+          text2: "Sua venda foi cadastrada com sucesso!",
+          visibilityTime: 5000,
+        });
+      }
+      fecharModalConfirmaPagamento();
+      setClienteSelecionado(null);
+      setTotalCarrinho(0);
+      setTotalCarrinhoDesconto(0);
+      setProdutosCarrinho([]);
+      setLoadingPagamento(false);
+    } catch (error) {
+      setAlert({
+        open: true,
+        title: "Ocorreu um erro",
+        message: "Ocorreu um problema, tente novamente mais tarde!",
+        colorButton: "#DD6B55",
+      });
+      setLoadingPagamento(false);
+    }
   };
+
+  const imprimirCupom = async () => {
+    // const response = await api.get(`/app/pdv/venda/imprimir?business_id=${usuario.business.id}`);
+    // console.log(response.data)
+
+    setAlert({
+      open: true,
+      title: "Carregando NFC-e...",
+      message: "Aguarde um momento até o carregamento ser concluído",
+      type: 2,
+      cancelButton: false,
+    });
+    //setModalImprimir(true);
+
+    const filename = "Comprovante.pdf";
+    const result = await FileSystem.downloadAsync(
+      `https://app.contetecnologia.com.br/public/api/app/pdv/venda/imprimir?business_id=${usuario.business.id}`,
+      FileSystem.documentDirectory + filename
+    );
+    shareAsync(result.uri);
+
+    setAlert({
+      open: false,
+      title: "",
+      message: "",
+      type: 1,
+    });
+  };
+
 
   return (
     <Style.Container>
       <Header />
       <Toast />
 
-      <AwesomeAlert
-        show={alert.open}
-        title={alert.title}
-        message={alert.message}
-        closeOnTouchOutside={false}
-        closeOnHardwareBackPress={false}
-        showConfirmButton={true}
-        confirmText="Ok"
-        confirmButtonColor="#DD6B55"
-        onConfirmPressed={() => {
-          setAlert({
-            open: false,
-            title: "",
-            message: "",
-          });
-        }}
-      />
+      {alert.type == 1 && (
+        <AwesomeAlert
+          show={alert.open}
+          title={alert.title}
+          message={alert.message}
+          closeOnTouchOutside={false}
+          closeOnHardwareBackPress={false}
+          showConfirmButton={true}
+          confirmText="Ok"
+          confirmButtonColor="#DD6B55"
+          onConfirmPressed={() => {
+            setAlert({
+              open: false,
+              title: "",
+              message: "",
+            });
+          }}
+        />
+      )}
+      {alert.type == 2 && (
+        <AwesomeAlert
+          show={alert.open}
+          title={alert.title}
+          message={alert.message}
+          closeOnTouchOutside={false}
+          closeOnHardwareBackPress={false}
+          showConfirmButton={true}
+          showCancelButton={alert.cancelButton}
+          confirmText="Fechar"
+          cancelText={"Imprimir"}
+          confirmButtonColor="#DD6B55"
+          cancelButtonColor="#4439ff"
+          onConfirmPressed={() => {
+            setAlert({
+              open: false,
+              title: "",
+              message: "",
+              type: 1,
+            });
+          }}
+          onCancelPressed={imprimirCupom}
+        />
+      )}
 
       <Style.ContainerCategorias>
         <View style={{ flexDirection: "row", justifyContent: "space-between" }}>
@@ -371,65 +467,128 @@ export default function Home() {
       </Style.ContainerCategorias>
 
       <Style.ContainerProdutos>
-        <Style.TitleContainer>Produtos</Style.TitleContainer>
-        {categoriaSelecionada.id && (
-          <Style.SubTitleContainer>
-            {categoriaSelecionada.nome}
-          </Style.SubTitleContainer>
-        )}
-
-        <View style={{ flex: 1, alignItems: "center" }}>
-          <Style.ContainerInput>
-            <AntDesign
-              name="search1"
-              size={25}
-              color="black"
-              style={{ alignSelf: "center" }}
-            />
-            <Style.Search
-              value={pesquisaProduto}
-              onChangeText={(t) => setPesquisaProduto(t)}
-              placeholder="Pesquisar produto"
-            />
-          </Style.ContainerInput>
-
-          {loadingProdutos ? (
-            <ActivityIndicator
-              size={24}
-              color={"#4439ff"}
-              style={{ marginTop: 20 }}
-            />
-          ) : (
-            <FlatList
-              numColumns={"3"}
-              showsVerticalScrollIndicator={false}
-              data={produtosLista}
-              keyExtractor={(item) => item.id}
-              renderItem={({ item }) => (
-                <Style.CardProduto
-                  onPress={() =>
-                    addProduto(
-                      item.id,
-                      item.name,
-                      item.variations[0].sell_price_inc_tax
-                    )
-                  }
-                >
-                  <Style.CardProdutoValor>
-                    <Style.CardProdutoValorText>
-                      {item.variations[0] != undefined &&
-                        "R$ " + item.variations[0].sell_price_inc_tax}
-                    </Style.CardProdutoValorText>
-                  </Style.CardProdutoValor>
-                  <ScrollView scrollEnabled={true} nestedScrollEnabled={true}>
-                    <Style.TitleCardProduto>{item.name}</Style.TitleCardProduto>
-                  </ScrollView>
-                </Style.CardProduto>
-              )}
-            />
+        <ScrollView
+          horizontal={false}
+          nestedScrollEnabled={true}
+          scrollEnabled={true}
+        >
+          <Style.TitleContainer>Produtos</Style.TitleContainer>
+          {categoriaSelecionada.id && (
+            <Style.SubTitleContainer>
+              {categoriaSelecionada.nome}
+            </Style.SubTitleContainer>
           )}
-        </View>
+          <View style={{ flex: 1, alignItems: "center" }}>
+            <Style.ContainerInput>
+              <AntDesign
+                name="search1"
+                size={25}
+                color="black"
+                style={{ alignSelf: "center" }}
+              />
+              <Style.Search
+                value={pesquisaProduto}
+                onChangeText={(t) => setPesquisaProduto(t)}
+                placeholder="Pesquisar produto"
+              />
+            </Style.ContainerInput>
+
+            {loadingProdutos ? (
+              <ActivityIndicator
+                size={24}
+                color={"#4439ff"}
+                style={{ marginTop: 20 }}
+              />
+            ) : (
+              rotacaoTela == 1 ?
+              <FlatList
+                key={"1"}
+                nestedScrollEnabled={true}
+                scrollEnabled={false}
+                numColumns={"3"}
+                showsVerticalScrollIndicator={false}
+                data={produtosLista}
+                keyExtractor={(item) => item.id}
+                renderItem={({ item }) => (
+                    <Style.CardProduto
+                      onPress={() =>
+                        addProduto(
+                          item.id,
+                          item.name,
+                          item.variations[0].sell_price_inc_tax
+                        )
+                      }
+                    >
+                      <Style.CardProdutoValor>
+                        <Style.CardProdutoValorText>
+                          {item.variations[0] != undefined &&
+                            "R$ " + item.variations[0].sell_price_inc_tax}
+                        </Style.CardProdutoValorText>
+                      </Style.CardProdutoValor>
+                      <ScrollView
+                        scrollEnabled={true}
+                        nestedScrollEnabled={true}
+                      >
+                        <Style.TitleCardProduto>
+                          {item.name}
+                        </Style.TitleCardProduto>
+                      </ScrollView>
+                    </Style.CardProduto>
+                )}
+              />
+              :
+              <FlatList
+                key={"2"}
+                nestedScrollEnabled={true}
+                scrollEnabled={false}
+                numColumns={"5"}
+                showsVerticalScrollIndicator={false}
+                data={produtosLista}
+                keyExtractor={(item) => item.id}
+                renderItem={({ item }) => (
+                
+                    <Style.CardProduto
+                      onPress={() =>
+                        addProduto(
+                          item.id,
+                          item.name,
+                          item.variations[0].sell_price_inc_tax
+                        )
+                      }
+                    >
+                      <Style.CardProdutoValor>
+                        <Style.CardProdutoValorText>
+                          {item.variations[0] != undefined &&
+                            "R$ " + item.variations[0].sell_price_inc_tax}
+                        </Style.CardProdutoValorText>
+                      </Style.CardProdutoValor>
+                      <ScrollView
+                        scrollEnabled={true}
+                        nestedScrollEnabled={true}
+                      >
+                        <Style.TitleCardProduto>
+                          {item.name}
+                        </Style.TitleCardProduto>
+                      </ScrollView>
+                    </Style.CardProduto>
+               
+                )}
+              />
+            )}
+          </View>
+        </ScrollView>
       </Style.ContainerProdutos>
+
+      {/* <Modal isVisible={modalImprimir} onBackdropPress={() => setModalImprimir(false)}>
+        <View style={{ height: "90%", width: "100%" }}>
+          <WebView
+            originWhitelist={["*"]}
+            source={{
+              uri: CONST.URL+"/app/pdv/venda/imprimir?business_id="+usuario?.business.id,
+            }}
+          />
+        </View>
+      </Modal> */}
 
       <Modal isVisible={modalCarrinho}>
         <Style.ContentDescriptionModal>
