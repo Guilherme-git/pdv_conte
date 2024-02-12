@@ -1,3 +1,3 @@
 export default {
-    URL: "https://docs.google.com/viewerng/viewer?url=https://app.contetecnologia.com.br/public/api"
+    URL: "https://docs.google.com/viewerng/viewer?url=http://192.168.1.103/Conte-tecnologia/app_empresa/ERP_CONTE/public/api"
 }

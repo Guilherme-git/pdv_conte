@@ -2,8 +2,12 @@ import { useState } from "react";
 import * as Style from "./style";
 import ButtonDrawer from "../buttonDrawer";
 import { useNavigation, DrawerActions } from "@react-navigation/native";
+import {
+  Entypo,
 
-export default function Header({ type }) {
+} from "@expo/vector-icons";
+
+export default function Header({ type, categoriaSelecionada, ...props }) {
   const navigation = useNavigation();
 
   return (
@@ -16,6 +20,13 @@ export default function Header({ type }) {
       >
         <ButtonDrawer />
       </Style.ContainerIcon>
+
+      {categoriaSelecionada.id && (
+        <Style.LimparFiltros {...props}>
+          <Style.LimparFiltroText>Limpar filtros</Style.LimparFiltroText>
+        </Style.LimparFiltros>
+      )}
+
     </Style.Container>
   );
 }

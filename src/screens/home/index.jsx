@@ -74,8 +74,8 @@ export default function Home() {
 
   useFocusEffect(
     useCallback(() => {
-      Dimensions.addEventListener('change', ({window:{width,height}}) => {
-        if(width < height) {
+      Dimensions.addEventListener('change', ({ window: { width, height } }) => {
+        if (width < height) {
           setRotacaoTela(1)
         } else {
           setRotacaoTela(2)
@@ -112,14 +112,14 @@ export default function Home() {
           setClientes(dados3.data);
           for (let i = 0; i < dados3.data.length; i++) {
             const element = dados3.data[i];
-        
+
             setClienteSelecionado({
               id: element.id,
               name: element.name
             });
-          
-             break;
-          }   
+
+            break;
+          }
         }
       };
       response();
@@ -204,6 +204,13 @@ export default function Home() {
       text2: "O produto foi adicionado no carrinho!",
       visibilityTime: 2000,
     });
+
+    setAlert({
+      open: false,
+      title: "",
+      message: "",
+      type: 1,
+    });
   };
 
   const abrirCarrinho = () => {
@@ -221,7 +228,6 @@ export default function Home() {
 
   const fecharModalConfirmaPagamento = () => {
     setDesconto(null);
-    setClienteSelecionado(null);
     setTotalCarrinhoDesconto(totalCarrinho);
     setModalCarrinho(false);
   };
@@ -324,7 +330,6 @@ export default function Home() {
         });
       }
       fecharModalConfirmaPagamento();
-      setClienteSelecionado(null);
       setTotalCarrinho(0);
       setTotalCarrinhoDesconto(0);
       setProdutosCarrinho([]);
@@ -340,38 +345,63 @@ export default function Home() {
     }
   };
 
-  const imprimirCupom = async () => {
+  const imprimirNFCE = async () => {
     // const response = await api.get(`/app/pdv/venda/imprimir?business_id=${usuario.business.id}`);
     // console.log(response.data)
-
     setAlert({
       open: true,
       title: "Carregando NFC-e...",
       message: "Aguarde um momento até o carregamento ser concluído",
-      type: 2,
+      type: 1,
       cancelButton: false,
     });
-    //setModalImprimir(true);
 
-    const filename = "Comprovante.pdf";
+    const filename = "NFCe.pdf";
     const result = await FileSystem.downloadAsync(
-      `https://app.contetecnologia.com.br/public/api/app/pdv/venda/imprimir?business_id=${usuario.business.id}`,
+      `http://192.168.1.100/Conte-tecnologia/app_empresa/ERP_CONTE/public/api/app/pdv/venda/imprimir?business_id=${usuario.business.id}`,
       FileSystem.documentDirectory + filename
     );
-    shareAsync(result.uri);
-
     setAlert({
       open: false,
       title: "",
       message: "",
       type: 1,
     });
+    console.log(result.uri)
+    shareAsync(result.uri);
+
+
+  };
+
+  const imprimirCupom = async () => {
+    // const response = await api.get(`/app/pdv/venda/imprimir-cupom?business_id=${usuario.business.id}`);
+    // return console.log(response.data)
+    setAlert({
+      open: true,
+      title: "Carregando Cupom...",
+      message: "Aguarde um momento até o carregamento ser concluído",
+      type: 1,
+      cancelButton: false,
+    });
+
+    const filename = "Cupom.pdf";
+    const result = await FileSystem.downloadAsync(
+      `http://192.168.1.100/Conte-tecnologia/app_empresa/ERP_CONTE/public/api/app/pdv/venda/imprimir-cupom?business_id=${usuario.business.id}`,
+      FileSystem.documentDirectory + filename
+    );
+    setAlert({
+      open: false,
+      title: "",
+      message: "",
+    });
+    console.log(result.uri)
+    shareAsync(result.uri);
   };
 
 
   return (
     <Style.Container>
-      <Header />
+      <Header onPress={limparFiltros} categoriaSelecionada={categoriaSelecionada} />
       <Toast />
 
       {alert.type == 1 && (
@@ -398,35 +428,28 @@ export default function Home() {
           show={alert.open}
           title={alert.title}
           message={alert.message}
-          closeOnTouchOutside={false}
+          closeOnTouchOutside={true}
           closeOnHardwareBackPress={false}
           showConfirmButton={true}
           showCancelButton={alert.cancelButton}
-          confirmText="Fechar"
-          cancelText={"Imprimir"}
+          confirmText="Imprimir cupom"
+          cancelText={"Imprimir NFC-e"}
           confirmButtonColor="#DD6B55"
           cancelButtonColor="#4439ff"
-          onConfirmPressed={() => {
-            setAlert({
-              open: false,
-              title: "",
-              message: "",
-              type: 1,
-            });
-          }}
-          onCancelPressed={imprimirCupom}
+          onConfirmPressed={imprimirCupom}
+          onCancelPressed={imprimirNFCE}
         />
       )}
 
       <Style.ContainerCategorias>
-        <View style={{ flexDirection: "row", justifyContent: "space-between" }}>
+        {/* <View style={{ flexDirection: "row", justifyContent: "space-between" }}>
           <Style.TitleContainer>Categorias</Style.TitleContainer>
           {categoriaSelecionada.id && (
             <Style.LimparFiltros onPress={limparFiltros}>
               <Style.LimparFiltroText>Limpar filtros</Style.LimparFiltroText>
             </Style.LimparFiltros>
           )}
-        </View>
+        </View> */}
 
         {loadingCategorias ? (
           <ActivityIndicator
@@ -472,17 +495,27 @@ export default function Home() {
           nestedScrollEnabled={true}
           scrollEnabled={true}
         >
-          <Style.TitleContainer>Produtos</Style.TitleContainer>
-          {categoriaSelecionada.id && (
-            <Style.SubTitleContainer>
-              {categoriaSelecionada.nome}
-            </Style.SubTitleContainer>
-          )}
+          <View style={{ flexDirection: 'row', justifyContent: 'space-between' }}>
+            <View>
+              <Style.TitleContainer>Produtos - {"R$ " + totalCarrinho} </Style.TitleContainer>
+              {categoriaSelecionada.id && (
+                <Style.SubTitleContainer>
+                  {categoriaSelecionada.nome}
+                </Style.SubTitleContainer>
+              )}
+            </View>
+
+            <Style.ContainerCarrinho onPress={abrirCarrinho}>
+              <Entypo name="shopping-cart" size={24} color="#fff" />
+            </Style.ContainerCarrinho>
+          </View>
+
+
           <View style={{ flex: 1, alignItems: "center" }}>
             <Style.ContainerInput>
               <AntDesign
                 name="search1"
-                size={25}
+                size={20}
                 color="black"
                 style={{ alignSelf: "center" }}
               />
@@ -501,15 +534,15 @@ export default function Home() {
               />
             ) : (
               rotacaoTela == 1 ?
-              <FlatList
-                key={"1"}
-                nestedScrollEnabled={true}
-                scrollEnabled={false}
-                numColumns={"3"}
-                showsVerticalScrollIndicator={false}
-                data={produtosLista}
-                keyExtractor={(item) => item.id}
-                renderItem={({ item }) => (
+                <FlatList
+                  key={"1"}
+                  nestedScrollEnabled={true}
+                  scrollEnabled={false}
+                  numColumns={"4"}
+                  showsVerticalScrollIndicator={false}
+                  data={produtosLista}
+                  keyExtractor={(item) => item.id}
+                  renderItem={({ item }) => (
                     <Style.CardProduto
                       onPress={() =>
                         addProduto(
@@ -519,34 +552,32 @@ export default function Home() {
                         )
                       }
                     >
-                      <Style.CardProdutoValor>
-                        <Style.CardProdutoValorText>
-                          {item.variations[0] != undefined &&
-                            "R$ " + item.variations[0].sell_price_inc_tax}
-                        </Style.CardProdutoValorText>
-                      </Style.CardProdutoValor>
                       <ScrollView
                         scrollEnabled={true}
                         nestedScrollEnabled={true}
                       >
+                        <Style.TitleCardValorProduto>
+                          {"R$ " + item.variations[0].sell_price_inc_tax}
+                        </Style.TitleCardValorProduto>
+
                         <Style.TitleCardProduto>
                           {item.name}
                         </Style.TitleCardProduto>
                       </ScrollView>
                     </Style.CardProduto>
-                )}
-              />
-              :
-              <FlatList
-                key={"2"}
-                nestedScrollEnabled={true}
-                scrollEnabled={false}
-                numColumns={"5"}
-                showsVerticalScrollIndicator={false}
-                data={produtosLista}
-                keyExtractor={(item) => item.id}
-                renderItem={({ item }) => (
-                
+                  )}
+                />
+                :
+                <FlatList
+                  key={"2"}
+                  nestedScrollEnabled={true}
+                  scrollEnabled={false}
+                  numColumns={"7"}
+                  showsVerticalScrollIndicator={false}
+                  data={produtosLista}
+                  keyExtractor={(item) => item.id}
+                  renderItem={({ item }) => (
+
                     <Style.CardProduto
                       onPress={() =>
                         addProduto(
@@ -556,24 +587,22 @@ export default function Home() {
                         )
                       }
                     >
-                      <Style.CardProdutoValor>
-                        <Style.CardProdutoValorText>
-                          {item.variations[0] != undefined &&
-                            "R$ " + item.variations[0].sell_price_inc_tax}
-                        </Style.CardProdutoValorText>
-                      </Style.CardProdutoValor>
                       <ScrollView
                         scrollEnabled={true}
                         nestedScrollEnabled={true}
                       >
+                        <Style.TitleCardValorProduto>
+                          {"R$ " + item.variations[0].sell_price_inc_tax}
+                        </Style.TitleCardValorProduto>
+
                         <Style.TitleCardProduto>
                           {item.name}
                         </Style.TitleCardProduto>
                       </ScrollView>
                     </Style.CardProduto>
-               
-                )}
-              />
+
+                  )}
+                />
             )}
           </View>
         </ScrollView>
@@ -609,8 +638,8 @@ export default function Home() {
                 {metodoPagamento == "cash"
                   ? "Dinheiro"
                   : metodoPagamento == "card"
-                  ? "Cartão de crédito"
-                  : "Pix"}
+                    ? "Cartão de crédito"
+                    : "Pix"}
               </Style.ContentDescriptionText>
               <MaterialIcons
                 onPress={() => setMetodoPagamentoDialog(true)}
@@ -776,7 +805,7 @@ export default function Home() {
         </Style.ContentDescriptionModal>
       </Modal>
 
-      <Style.ContainerFooter>
+      {/* <Style.ContainerFooter>
         <Style.ContainerTotal>
           <Style.TextTotal>R$ {totalCarrinho}</Style.TextTotal>
         </Style.ContainerTotal>
@@ -784,7 +813,7 @@ export default function Home() {
         <Style.ContainerCarrinho onPress={abrirCarrinho}>
           <Entypo name="shopping-cart" size={24} color="#fff" />
         </Style.ContainerCarrinho>
-      </Style.ContainerFooter>
+      </Style.ContainerFooter> */}
     </Style.Container>
   );
 }
