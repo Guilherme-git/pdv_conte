@@ -44,8 +44,7 @@ export const CardCategoria = styled.TouchableOpacity`
     background-color:  ${({theme, selecionada}) => selecionada ? theme.COLORS.COR2 : theme.COLORS.COR4};
     margin-top: ${RFValue(5)}px;
     margin-bottom: ${RFValue(5)}px;
-    width: ${RFValue(100)}px;
-    padding: ${RFValue(5)}px;
+    width: ${RFValue(60)}px;
     border-radius: ${RFValue(8)}px;
     justify-content: center;
     align-items: center;
@@ -55,7 +54,7 @@ export const CardCategoria = styled.TouchableOpacity`
 export const TitleCardCategoria = styled.Text`
     color: ${({theme, selecionada}) => selecionada ? theme.COLORS.COR3 : theme.COLORS.COR5};
     font-family: ${({theme}) => theme.FONT_FAMILY.REGULAR};
-    font-size:  ${({theme}) => theme.FONT_SIZE.LG}px;
+    font-size:  ${({theme}) => theme.FONT_SIZE.SM}px;
 `;
 
 export const CardProduto = styled.TouchableOpacity`

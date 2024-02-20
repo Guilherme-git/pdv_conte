@@ -460,7 +460,7 @@ export default function Home() {
         ) : (
           <FlatList
           horizontal={false}
-          numColumns={"4"}
+          numColumns={"9"}
           showsHorizontalScrollIndicator={false}
           data={categorias}
           keyExtractor={(item) => item.id}
@@ -527,7 +527,7 @@ export default function Home() {
                 placeholder="Pesquisar produto"
               />
             </Style.ContainerInput>
-
+            
             {loadingProdutos ? (
               <ActivityIndicator
                 size={24}
@@ -540,7 +540,7 @@ export default function Home() {
                   key={"1"}
                   nestedScrollEnabled={true}
                   scrollEnabled={false}
-                  numColumns={"4"}
+                  numColumns={"6"}
                   showsVerticalScrollIndicator={false}
                   data={produtosLista}
                   keyExtractor={(item) => item.id}
@@ -574,7 +574,7 @@ export default function Home() {
                   key={"2"}
                   nestedScrollEnabled={true}
                   scrollEnabled={false}
-                  numColumns={"7"}
+                  numColumns={"6"}
                   showsVerticalScrollIndicator={false}
                   data={produtosLista}
                   keyExtractor={(item) => item.id}
