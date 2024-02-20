@@ -21,7 +21,7 @@ export const SubTitleContainer = styled.Text`
 
 export const ContainerCategorias = styled.View`
     background-color: ${({theme}) => theme.COLORS.COR3};
-    height: ${RFValue(40)}px;
+    height: ${RFValue(60)}px;
     margin: ${RFValue(10)}px;
     padding-left: ${RFValue(10)}px;
     padding-right: ${RFValue(10)}px;
@@ -44,7 +44,7 @@ export const CardCategoria = styled.TouchableOpacity`
     background-color:  ${({theme, selecionada}) => selecionada ? theme.COLORS.COR2 : theme.COLORS.COR4};
     margin-top: ${RFValue(5)}px;
     margin-bottom: ${RFValue(5)}px;
-    width: ${RFValue(200)}px;
+    width: ${RFValue(100)}px;
     padding: ${RFValue(5)}px;
     border-radius: ${RFValue(8)}px;
     justify-content: center;

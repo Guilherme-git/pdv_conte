@@ -358,7 +358,7 @@ export default function Home() {
 
     const filename = "NFCe.pdf";
     const result = await FileSystem.downloadAsync(
-      `http://192.168.1.100/Conte-tecnologia/app_empresa/ERP_CONTE/public/api/app/pdv/venda/imprimir?business_id=${usuario.business.id}`,
+      `https://app.contetecnologia.com.br/public/api/app/pdv/venda/imprimir?business_id=${usuario.business.id}`,
       FileSystem.documentDirectory + filename
     );
     setAlert({
@@ -386,7 +386,7 @@ export default function Home() {
 
     const filename = "Cupom.pdf";
     const result = await FileSystem.downloadAsync(
-      `http://192.168.1.100/Conte-tecnologia/app_empresa/ERP_CONTE/public/api/app/pdv/venda/imprimir-cupom?business_id=${usuario.business.id}`,
+      `https://app.contetecnologia.com.br/public/api/app/pdv/venda/imprimir-cupom?business_id=${usuario.business.id}`,
       FileSystem.documentDirectory + filename
     );
     setAlert({
@@ -459,33 +459,35 @@ export default function Home() {
           />
         ) : (
           <FlatList
-            horizontal={true}
-            showsHorizontalScrollIndicator={false}
-            data={categorias}
-            keyExtractor={(item) => item.id}
-            renderItem={({ item }) =>
-              categoriaSelecionada.id == item.id ? (
-                <Style.CardCategoria
-                  key={item.id}
-                  selecionada={true}
-                  onPress={() => selecionarCategoria(item.id, item.name)}
-                >
-                  <Style.TitleCardCategoria selecionada={true}>
-                    {item.name}
-                  </Style.TitleCardCategoria>
-                </Style.CardCategoria>
-              ) : (
-                <Style.CardCategoria
-                  selecionada={false}
-                  onPress={() => selecionarCategoria(item.id, item.name)}
-                >
-                  <Style.TitleCardCategoria selecionada={false}>
-                    {item.name}
-                  </Style.TitleCardCategoria>
-                </Style.CardCategoria>
-              )
-            }
-          />
+          horizontal={false}
+          numColumns={"4"}
+          showsHorizontalScrollIndicator={false}
+          data={categorias}
+          keyExtractor={(item) => item.id}
+          renderItem={({ item }) =>
+            categoriaSelecionada.id == item.id ? (
+              <Style.CardCategoria
+                key={item.id}
+                selecionada={true}
+                onPress={() => selecionarCategoria(item.id, item.name)}
+              >
+                <Style.TitleCardCategoria selecionada={true}>
+                  {item.name}
+                </Style.TitleCardCategoria>
+              </Style.CardCategoria>
+            ) : (
+              <Style.CardCategoria
+                selecionada={false}
+                onPress={() => selecionarCategoria(item.id, item.name)}
+              >
+                <Style.TitleCardCategoria selecionada={false}>
+                  {item.name}
+                </Style.TitleCardCategoria>
+              </Style.CardCategoria>
+            )
+          }
+        />
+
         )}
       </Style.ContainerCategorias>
 
